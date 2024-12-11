@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'Pages/HomePage.dart';
 import 'Pages/LoginPage.dart';
+import 'Pages/AudioRecorderPage.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -28,8 +29,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
       ),
       debugShowCheckedModeBanner: false,
-      // Using StreamBuilder for auth state
-      home: AuthWrapper(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const AuthWrapper(),
+        '/assistant': (context) => AudioRecorderPage(), // Route for Assistant Page
+      },
     );
   }
 }

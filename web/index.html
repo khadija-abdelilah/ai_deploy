@@ -1,57 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Set the base href dynamically -->
   <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="ai_deploy">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-
   <title>ai_deploy</title>
   <link rel="manifest" href="manifest.json">
-
-  <!-- Firebase JS SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js"></script>
-
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyB24S2AIetIUWkHWdn5rJ6CUokeISpEY6s",
-      authDomain: "model-ia-f8539.firebaseapp.com",
-      projectId: "model-ia-f8539",
-      storageBucket: "model-ia-f8539.appspot.com",
-      messagingSenderId: "566425298962",
-      appId: "1:566425298962:web:f543fc772770247d5f50cb",
-      measurementId: "G-XVCVEZFLR1"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-
-    // Optionally, initialize Firebase services as needed
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-
-    // Example: Check Firebase initialization
-    console.log("Firebase Initialized:", app);
-  </script>
 </head>
+
 <body>
-<!-- Flutter bootstrap -->
+<!-- Firebase Config -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js';
+  import { getAuth } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js';
+  import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js';
+  import { getStorage } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB24S2AIetIUWkHWdn5rJ6CUokeISpEY6s",
+    authDomain: "model-ia-f8539.firebaseapp.com",
+    projectId: "model-ia-f8539",
+    storageBucket: "model-ia-f8539.appspot.com",
+    messagingSenderId: "566425298962",
+    appId: "1:566425298962:web:f543fc772770247d5f50cb",
+    measurementId: "G-XVCVEZFLR1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  console.log('Firebase Initialized', app);
+</script>
+
+<!-- Flutter Web Bootstrap -->
 <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

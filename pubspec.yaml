@@ -6,17 +6,22 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=3.5.0 <4.0.0" # Ensure compatibility with Dart SDK version 3.x
-
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  firebase_core: ^3.8.0 # Core Firebase package for initialization
-  firebase_auth: ^5.3.3 # Firebase Authentication
-  cloud_firestore: ^5.5.0 # Firestore for database
-  firebase_storage: ^12.3.6 # Firebase Storage for file uploads
-  google_sign_in : ^6.0.2
+  firebase_core: ^3.8.0
+  firebase_auth: ^5.3.3
+  cloud_firestore: ^5.5.0
+  firebase_storage: ^12.3.6
+  google_sign_in: ^6.0.2
   flutter_otp_text_field: ^1.1.1
+  permission_handler: ^11.3.1
+  flutter_sound: ^9.2.10
+  speech_to_text: ^7.0.0
+  image_picker: ^0.8.7+3
+  google_generative_ai: ^0.4.6
+
 
 dev_dependencies:
   flutter_test:
@@ -24,10 +29,8 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
 flutter:
-
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
 
