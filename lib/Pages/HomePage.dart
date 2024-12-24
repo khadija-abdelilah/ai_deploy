@@ -1,6 +1,8 @@
-import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+// NO 'dart:io' import for web
+
 import 'package:ai_deploy/Pages/LoginPage.dart';
 import 'package:ai_deploy/Pages/Ann.dart';
 import 'package:ai_deploy/Pages/Cnn.dart';
@@ -8,7 +10,6 @@ import 'package:ai_deploy/Pages/Rnn.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -16,42 +17,41 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
   User? currentUser;
-  String? profileImage;
+
+  /// Instead of storing the file path, we store a MemoryImage
+  /// for Flutter Web usage.
+  MemoryImage? _profileImage;
 
   @override
   void initState() {
     super.initState();
-    currentUser = auth.currentUser; // Get the current user
+    currentUser = auth.currentUser;
   }
 
+  /// Picks an image from the gallery using the image_picker plugin (Web-compatible).
   Future<void> _pickImage() async {
-    html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
-    uploadInput.accept = 'image/*';
-    uploadInput.click();
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    uploadInput.onChange.listen((e) {
-      final files = uploadInput.files;
-      if (files != null && files.isNotEmpty) {
-        final reader = html.FileReader();
+    if (pickedFile != null) {
+      // For Web, read the bytes and create a MemoryImage
+      final imageBytes = await pickedFile.readAsBytes();
 
-        reader.onLoadEnd.listen((e) {
-          setState(() {
-            profileImage = reader.result as String;
-          });
-        });
-
-        reader.readAsDataUrl(files[0]);
-      }
-    });
+      setState(() {
+        _profileImage = MemoryImage(imageBytes);
+      });
+    }
   }
 
-  signOut() async {
+  /// Signs the user out and navigates back to LoginPage.
+  Future<void> signOut() async {
     await auth.signOut();
+    if (!mounted) return;
     Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage())
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
 
@@ -65,11 +65,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Stack(
         children: [
-          // Background Image with color overlay
+          // Background
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/img_1.png'),
+                image: const AssetImage('assets/images/img_1.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.5),
@@ -97,9 +97,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Text(
+                      const Text(
                         'Choose an option from the menu',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           color: Colors.white,
                         ),
@@ -115,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // Side Drawer with Profile, Menu, and Logout Button
+  /// Builds the side drawer with profile image, menus, and logout.
   Widget _buildSideDrawer(BuildContext context) {
     return Container(
       width: 250,
@@ -142,11 +142,10 @@ class _MyHomePageState extends State<MyHomePage> {
             currentAccountPicture: GestureDetector(
               onTap: _pickImage,
               child: CircleAvatar(
-                backgroundImage: profileImage != null
-                    ? NetworkImage(profileImage!)
-                    : null,
                 backgroundColor: Colors.blue,
-                child: profileImage == null
+                // For web, use MemoryImage if available
+                backgroundImage: _profileImage,
+                child: _profileImage == null
                     ? const Icon(Icons.person, size: 50, color: Colors.white)
                     : null,
               ),
@@ -170,16 +169,19 @@ class _MyHomePageState extends State<MyHomePage> {
               title: const Text('Start Assistant'),
               onTap: () {
                 Navigator.pop(context); // Close the drawer
-                Navigator.pushNamed(context, '/assistant'); // Navigate to Assistant
+                Navigator.pushNamed(context, '/assistant');
               },
             ),
           ]),
           const Divider(),
           ListTile(
-            title: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text(
+              'Logout',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             leading: const Icon(Icons.logout, color: Colors.redAccent),
             onTap: () {
-              Navigator.pop(context); // Close the drawer
+              Navigator.pop(context);
               signOut();
             },
           ),
@@ -188,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // Menu Section for ANN, CNN, RNN, etc.
+  /// Builds an expandable menu section with sub-items.
   Widget _buildMenuSection(String title, IconData icon, List<Widget> children) {
     return ExpansionTile(
       leading: Icon(icon, color: Colors.indigo),
@@ -200,26 +202,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // Menu Item
+  /// Builds a single menu item that navigates to a given page.
   Widget _menuItem(BuildContext context, String title, IconData icon, Widget page) {
     return ListTile(
       leading: Icon(icon, color: Colors.indigo),
       title: Text(title, style: const TextStyle(fontSize: 16)),
       onTap: () {
-        Navigator.pop(context); // Close the drawer
+        Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => page),
         );
       },
     );
-  }
-
-  // Extract initials from name
-  String _getUserInitials(String? name) {
-    if (name == null || name.isEmpty) return "U";
-    List<String> names = name.split(" ");
-    String initials = names.map((name) => name[0]).join();
-    return initials.length > 2 ? initials.substring(0, 2).toUpperCase() : initials.toUpperCase();
   }
 }

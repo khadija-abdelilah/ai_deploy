@@ -1,39 +1,31 @@
+// File: lib/Pages/AudioRecorderPage.dart
+
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:ai_deploy/Services/gemini_service.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Assistant Vocal avec Gemini',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-      ),
-      home: AudioRecorderPage(),
-    );
-  }
-}
 
 class AudioRecorderPage extends StatefulWidget {
   @override
   _AudioRecorderPageState createState() => _AudioRecorderPageState();
 }
 
-class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTickerProviderStateMixin {
+class _AudioRecorderPageState extends State<AudioRecorderPage>
+    with SingleTickerProviderStateMixin {
   final SpeechToText _speechToText = SpeechToText();
-  final GeminiService _geminiService = GeminiService('AIzaSyBTjoqC3-CU-hMJonWsADVRP9gOC9qwelw');
+  final GeminiService _geminiService =
+  GeminiService('YOUR_GEMINI_API_KEY'); // <-- Insert your key or handle it securely
+
   bool _speechEnabled = false;
   bool _isListening = false;
   String _lastWords = '';
-  List<Map<String, String>> _conversationHistory = [];
+
+  // We'll store the conversation as a list of messages (Strings).
+  // You can store them in Firestore or locally if needed.
   List<String> _currentConversation = [];
+  // Or store multiple conversation histories:
+  List<Map<String, String>> _conversationHistory = [];
+
   late AnimationController _animationController;
 
   @override
@@ -46,23 +38,31 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
     )..repeat(reverse: true);
   }
 
+  @override
+  void dispose() {
+    _speechToText.stop();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  // Initialize speech recognition
   void _initSpeech() async {
     bool hasPermission = await _speechToText.initialize(
-      onStatus: (status) => print('Status: $status'),
-      onError: (error) => print('Error: $error'),
+      onStatus: (status) => debugPrint('SpeechToText status: $status'),
+      onError: (error) => debugPrint('SpeechToText error: $error'),
     );
 
     if (!hasPermission) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Microphone permission denied.')),
+        const SnackBar(content: Text('Microphone permission denied.')),
       );
     }
-
     setState(() {
       _speechEnabled = hasPermission;
     });
   }
 
+  // Start listening to voice
   void _startListening() async {
     if (_speechEnabled && !_speechToText.isListening) {
       await _speechToText.listen(onResult: _onSpeechResult);
@@ -73,21 +73,25 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
     }
   }
 
+  // Stop listening
   void _stopListening() async {
     await _speechToText.stop();
     setState(() {
       _isListening = false;
     });
     _animationController.stop();
+    // Send last recognized words to the Gemini model
     _sendToGemini(_lastWords);
   }
 
+  // Callback for speech recognition results
   void _onSpeechResult(SpeechRecognitionResult result) {
     setState(() {
       _lastWords = result.recognizedWords;
     });
   }
 
+  // Send recognized text to Gemini and get a response
   void _sendToGemini(String prompt) async {
     if (prompt.isEmpty) return;
 
@@ -99,6 +103,7 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
     try {
       final response = await _geminiService.generateResponse(prompt);
       setState(() {
+        // Replace the last placeholder with the actual Gemini response
         _currentConversation[_currentConversation.length - 1] = 'Gemini: $response';
       });
     } catch (e) {
@@ -109,6 +114,7 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
     }
   }
 
+  // Save the current conversation, then clear it
   void _saveConversation() {
     setState(() {
       _conversationHistory.add({
@@ -119,6 +125,7 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
     });
   }
 
+  // Load a saved conversation from _conversationHistory
   void _loadConversation(int index) {
     setState(() {
       _currentConversation = _conversationHistory[index]['content']!.split('\n');
@@ -126,17 +133,10 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
   }
 
   @override
-  void dispose() {
-    _speechToText.stop();
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Assistant Vocal avec Gemini', style: TextStyle(fontSize: 22)),
+        title: const Text('Assistant Vocal avec Gemini', style: TextStyle(fontSize: 22)),
         backgroundColor: Colors.deepPurple,
         elevation: 0,
       ),
@@ -144,7 +144,7 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
         child: Column(
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.deepPurple, Colors.purple],
                   begin: Alignment.topLeft,
@@ -154,12 +154,12 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 40,
                     backgroundImage: AssetImage('assets/images/avatar.png'),
                   ),
-                  SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 10),
+                  const Text(
                     'Historique des Conversations',
                     style: TextStyle(
                       color: Colors.white,
@@ -175,25 +175,55 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
                 itemCount: _conversationHistory.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    leading: Icon(Icons.history, color: Colors.deepPurple),
+                    leading: const Icon(Icons.history, color: Colors.deepPurple),
                     title: Text(
                       _conversationHistory[index]['title']!,
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
-                    onTap: () => _loadConversation(index),
+                    onTap: () {
+                      Navigator.pop(context); // close drawer
+                      _loadConversation(index);
+                    },
                   );
                 },
               ),
             ),
             if (_conversationHistory.isEmpty)
-              ListTile(
+              const ListTile(
                 title: Text('Aucune conversation enregistrée'),
               ),
+
+            const Divider(),
+            // Optional navigation in the Drawer:
+            ListTile(
+              leading: const Icon(Icons.image, color: Colors.deepPurple),
+              title: const Text('Aller à ANN'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/ann');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image_outlined, color: Colors.deepPurple),
+              title: const Text('Aller à CNN'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/cnn');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.home, color: Colors.deepPurple),
+              title: const Text('Aller à Home'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/home');
+              },
+            ),
           ],
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
             begin: Alignment.topCenter,
@@ -202,17 +232,20 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
         ),
         child: Column(
           children: <Widget>[
+            // Conversation area
             Expanded(
               child: ListView.builder(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 itemCount: _currentConversation.length,
                 itemBuilder: (context, index) {
-                  final isUserMessage = _currentConversation[index].startsWith('You:');
-                  return _buildChatBubble(_currentConversation[index], isUserMessage);
+                  final message = _currentConversation[index];
+                  final isUserMessage = message.startsWith('You:');
+                  return _buildChatBubble(message, isUserMessage);
                 },
               ),
             ),
-            SizedBox(height: 10), // Add spacing before the buttons
+            const SizedBox(height: 10),
+            // Microphone button with animation
             Center(
               child: AnimatedBuilder(
                 animation: _animationController,
@@ -233,16 +266,39 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
               ),
             ),
             const SizedBox(height: 10),
+            // Save conversation button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ElevatedButton(
                 onPressed: _saveConversation,
-                child: Text('Enregistrer la Conversation'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
                   foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(50),
                 ),
+                child: const Text('Enregistrer la Conversation'),
               ),
+            ),
+            const SizedBox(height: 20),
+
+            // Row of navigation buttons (ANN, CNN, Home) if you want them here
+            // (You can also use the Drawer approach above)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/ann'),
+                  child: const Text('Aller à ANN'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/cnn'),
+                  child: const Text('Aller à CNN'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/home'),
+                  child: const Text('Aller à Home'),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
           ],
@@ -251,25 +307,28 @@ class _AudioRecorderPageState extends State<AudioRecorderPage> with SingleTicker
     );
   }
 
+  // A helper widget to build a chat bubble
   Widget _buildChatBubble(String message, bool isUser) {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 10),
-        padding: EdgeInsets.all(16),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.all(16),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
           color: isUser ? Colors.blueAccent : Colors.grey[900],
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-            bottomLeft: isUser ? Radius.circular(20) : Radius.zero,
-            bottomRight: isUser ? Radius.zero : Radius.circular(20),
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: isUser ? const Radius.circular(20) : Radius.zero,
+            bottomRight: isUser ? Radius.zero : const Radius.circular(20),
           ),
         ),
         child: Text(
           message,
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
       ),
     );

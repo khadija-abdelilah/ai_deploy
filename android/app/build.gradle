@@ -1,15 +1,20 @@
+// File: android/app/build.gradle
+
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'dev.flutter.flutter-gradle-plugin' // Flutter plugin for Android v2 embedding
+    id 'dev.flutter.flutter-gradle-plugin' // Flutter plugin for new Android embedding
 }
 
 android {
-    compileSdkVersion 33
+    // Required for AGP 8.0+:
+    namespace "com.example.ai_deploy"
+
+    compileSdkVersion 34
 
     defaultConfig {
-        applicationId "com.example.my_restaurant_app"
-        minSdkVersion 21
+        applicationId "com.example.ai_deploy"
+        minSdkVersion 24
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
@@ -26,13 +31,19 @@ android {
 
     buildTypes {
         release {
+            // If you do not want code shrinking:
             minifyEnabled false
+            shrinkResources false
+            // Or if you do want to shrink code/resources, set both to true:
+            // minifyEnabled true
+            // shrinkResources true
+
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
 
+// Points to the root of your Flutter project:
 flutter {
     source = "../.."
 }
-

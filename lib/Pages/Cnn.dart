@@ -18,7 +18,6 @@ class _CnnPageState extends State<CnnPage> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // Fonction pour sélectionner une image depuis la galerie ou la caméra
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
@@ -29,7 +28,7 @@ class _CnnPageState extends State<CnnPage> {
       if (pickedFile != null) {
         setState(() {
           _imageFile = File(pickedFile.path);
-          _prediction = null; // Réinitialiser la prédiction
+          _prediction = null;
         });
       }
     } catch (e) {
@@ -40,7 +39,6 @@ class _CnnPageState extends State<CnnPage> {
     }
   }
 
-  // Fonction pour afficher le dialogue de sélection de source d'image
   void _showImageSourceSelection() {
     showModalBottomSheet(
       context: context,
@@ -71,7 +69,6 @@ class _CnnPageState extends State<CnnPage> {
     );
   }
 
-  // Fonction pour obtenir la prédiction du modèle CNN
   Future<void> _getPrediction() async {
     if (_imageFile == null) return;
 
@@ -80,11 +77,10 @@ class _CnnPageState extends State<CnnPage> {
     });
 
     try {
-      // TODO: Intégrer votre logique de prédiction ici
-      // Exemple de simulation de prédiction
-      await Future.delayed(Duration(seconds: 2)); // Simuler un délai de traitement
+      // TODO: votre logique
+      await Future.delayed(const Duration(seconds: 2));
       setState(() {
-        _prediction = "Dog"; // Remplacez par la prédiction réelle
+        _prediction = "Dog"; // Exemple
       });
     } catch (e) {
       print('Erreur lors de la prédiction: $e');
@@ -141,10 +137,10 @@ class _CnnPageState extends State<CnnPage> {
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                     onPressed: _getPrediction,
-                    child: const Text('Classer l\'Image'),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
                     ),
+                    child: const Text('Classer l\'Image'),
                   ),
                   const SizedBox(height: 20),
                   _prediction != null
@@ -163,6 +159,29 @@ class _CnnPageState extends State<CnnPage> {
           ],
         ),
       ),
+
+      // Boutons pour naviguer
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ElevatedButton(
+            // Retour à la page ANN
+            onPressed: () => Navigator.pushNamed(context, '/ann'),
+            child: const Text('Aller à ANN'),
+          ),
+          ElevatedButton(
+            // Vers l'assistant vocal
+            onPressed: () => Navigator.pushNamed(context, '/assistant'),
+            child: const Text('Aller à l\'Assistant'),
+          ),
+          ElevatedButton(
+            // Vers la Home
+            onPressed: () => Navigator.pushNamed(context, '/home'),
+            child: const Text('Aller à Home'),
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

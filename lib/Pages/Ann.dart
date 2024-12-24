@@ -82,7 +82,7 @@ class _AnnPageState extends State<AnnPage> {
     try {
       // TODO: Intégrer votre logique de prédiction ici
       // Exemple de simulation de prédiction
-      await Future.delayed(Duration(seconds: 2)); // Simuler un délai de traitement
+      await Future.delayed(const Duration(seconds: 2));
       setState(() {
         _prediction = "Cat"; // Remplacez par la prédiction réelle
       });
@@ -141,10 +141,10 @@ class _AnnPageState extends State<AnnPage> {
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                     onPressed: _getPrediction,
-                    child: const Text('Classer l\'Image'),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
                     ),
+                    child: const Text('Classer l\'Image'),
                   ),
                   const SizedBox(height: 20),
                   _prediction != null
@@ -163,6 +163,29 @@ class _AnnPageState extends State<AnnPage> {
           ],
         ),
       ),
+
+      // Ajout d’un Row pour naviguer vers CNN, Assistant, Home
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ElevatedButton(
+            // Redirection vers la CNN Page
+            onPressed: () => Navigator.pushNamed(context, '/cnn'),
+            child: const Text('Aller à CNN'),
+          ),
+          ElevatedButton(
+            // Redirection vers l’Assistant vocal
+            onPressed: () => Navigator.pushNamed(context, '/assistant'),
+            child: const Text('Aller à l\'Assistant'),
+          ),
+          ElevatedButton(
+            // Redirection vers la HomePage
+            onPressed: () => Navigator.pushNamed(context, '/home'),
+            child: const Text('Aller à Home'),
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
